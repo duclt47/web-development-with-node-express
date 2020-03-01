@@ -9,8 +9,17 @@ var handlebars = require('express3-handlebars').create({ defaultLayout: 'main' }
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
+app.set('port', process.env.PORT || 3000);
 app.use(express.static(__dirname + '/public'));
 
+if( app.thing == null ) console.log( 'bleat!' );
+// run test
+app.use(function (req, res, next) {
+    res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
+    next();
+});
+
+// routes
 app.get('/', function (req, res) {
     res.render('home');
 });
@@ -34,8 +43,6 @@ app.get('/tours/request-group-rate', function (req, res) {
     res.render('tours/request-group-rate');
 });
 
-
-
 // 404 catch-all handler (middleware)
 app.use(function (req, res) {
     res.status(404);
@@ -49,15 +56,8 @@ app.use(function (err, req, res, next) {
     res.render('500');
 });
 
-// run test
-app.use(function (req, res, next) {
-    res.locals.showTests = app.get('env') !== 'production' &&
-        req.query.test === '1';
-    next();
-});
 
 
-app.set('port', process.env.PORT || 3000);
 app.listen(app.get('port'), function () {
     console.log('Express started on http://localhost:' +
         app.get('port') + '; press Ctrl-C to terminate.');
