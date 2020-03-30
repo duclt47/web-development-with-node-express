@@ -11,6 +11,7 @@ var credentials = require('./credentials.js');
 
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
+app.use(require('body-parser')());
 app.use(require('cookie-parser')(credentials.cookieSecret));
 
 app.get('/about', function (req, res) {
@@ -21,7 +22,7 @@ app.get('/about', function (req, res) {
 app.set('port', process.env.PORT || 3000);
 app.use(express.static(__dirname + '/public'));
 
-if( app.thing == null ) console.log( 'bleat!' );
+if (app.thing == null) console.log('bleat!');
 // run test
 app.use(function (req, res, next) {
     res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
@@ -31,6 +32,20 @@ app.use(function (req, res, next) {
 // routes
 app.get('/', function (req, res) {
     res.render('home');
+});
+
+app.get('/newsletter', function (req, res) {
+    // we will learn about CSRF later...for now, we just
+    // provide a dummy value
+    res.render('newsletter', { csrf: 'CSRF token goes here' });
+});
+
+app.post('/process', function (req, res) {
+    console.log('Form (from querystring): ' + req.query.form);
+    console.log('CSRF token (from hidden form field): ' + req.body._csrf);
+    console.log('Name (from visible form field): ' + req.body.name);
+    console.log('Email (from visible form field): ' + req.body.email);
+    res.redirect(303, '/thank-you');
 });
 
 app.get('/about', function (req, res) {
