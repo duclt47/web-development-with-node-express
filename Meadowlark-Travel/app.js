@@ -3,23 +3,17 @@ var express = require('express');
 var app = express();
 // set up handlebars view engine
 var handlebars = require('express3-handlebars').create({ defaultLayout: 'main' });
+var fortune = require('./lib/fortune.js');
+
+var credentials = require('./credentials.js');
 
 
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
-
-var fortunes = [
-    "Conquer your fears or they will conquer you.",
-    "Rivers need springs.",
-    "Do not fear what you don't know.",
-    "You will have a pleasant surprise.",
-    "Whenever possible, keep it simple.",
-];
+app.use(require('cookie-parser')(credentials.cookieSecret));
 
 app.get('/about', function (req, res) {
-    var randomFortune =
-        fortunes[Math.floor(Math.random() * fortunes.length)];
-    res.render('about', { fortune: randomFortune });
+    res.render('about', { fortune: fortune.getFortune() });
 });
 
 app.use(express.static(__dirname + '/public'));
@@ -33,6 +27,11 @@ app.get('/about', function (req, res) {
     res.render('about');
 });
 
+app.get('/test-cookie', function (req, res) {
+    // res.cookie('monster', 'nom nom');
+    res.cookie('signed_monster', 'nom nom', { signed: true });
+    res.render('about');
+})
 // 404 catch-all handler (middleware)
 app.use(function (req, res) {
     res.status(404);
